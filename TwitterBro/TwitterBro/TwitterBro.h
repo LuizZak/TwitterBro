@@ -1,5 +1,5 @@
 //
-//  TBTwitterBro.h
+//  TwitterBro.h
 //  PassagemDeViews
 //
 //  Created by LUIZ FERNANDO SILVA on 28/03/14.
