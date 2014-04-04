@@ -169,6 +169,87 @@
     }
 }
 
+// Posta um tweet com a imagem provida como anexo
+- (long)postTweet:(NSString*)text image:(UIImage*)image callback:(void (^)(long, TBTweet*))callbackBlock
+{
+    long rid = internalRequestId++;
+    
+    NSURL *url = [[NSURL alloc] initWithString:@"https://api.twitter.com/1.1/statuses/update_with_media.json"];
+    
+    // Transforma a mídia em base64 e coloca na requisição
+    /*NSString *base64 = [self base64Image:image];
+    
+    [params setObject:base64 forKey:@"media[]"];*/
+
+    SLRequest *pegarUsuario = [SLRequest requestForServiceType:SLServiceTypeTwitter requestMethod:SLRequestMethodPOST URL:url parameters:nil];
+    
+    [pegarUsuario addMultipartData:[text dataUsingEncoding:NSUTF8StringEncoding] withName:@"status" type:@"multipart/form-data" filename:nil];
+    //[pegarUsuario addMultiPartData:[@"I just found the secret level!" dataUsingEncoding:NSUTF8StringEncoding] withName:@"status" type:@"multipart/form-data"];
+    
+    [pegarUsuario setAccount:self.twitterAccount];
+    
+    [pegarUsuario performRequestWithHandler:
+     ^(NSData *responseData, NSHTTPURLResponse *urlResponse, NSError *error) {
+         if (responseData)
+         {
+             NSDictionary *responseJson =
+             [NSJSONSerialization JSONObjectWithData:responseData
+                                             options:NSJSONReadingAllowFragments
+                                               error:nil];
+             
+             // Verifica se house algum erro durante a requisição
+             NSArray *arrayDeErros = [responseJson objectForKey:@"errors"];
+             
+             id erroa = arrayDeErros[0];
+             
+             if(arrayDeErros != nil)
+             {
+                 // Chama o callback
+                 if(callbackBlock != nil)
+                 {
+                     callbackBlock(rid, nil);
+                 }
+                 
+                 @synchronized(observers)
+                 {
+                     // Notifica os observers
+                     for(id<TBTwitterObserver> observer in observers)
+                     {
+                         if([observer respondsToSelector:@selector(twitterDidReceiveError:errors:)])
+                         {
+                             [observer twitterDidReceiveError:rid errors:arrayDeErros];
+                         }
+                     }
+                 }
+                 
+                 return;
+             }
+             
+             TBTweet *tweet = [TBJSONParser generateTweetForJSON:responseJson];
+             
+             // Chama o callback
+             if(callbackBlock != nil)
+             {
+                 callbackBlock(rid, tweet);
+             }
+             
+             @synchronized(observers)
+             {
+                 // Notifica os observers
+                 for(id<TBTwitterObserver> observer in observers)
+                 {
+                     if([observer respondsToSelector:@selector(twitterDidPostTweet:requestId:)])
+                     {
+                         [observer twitterDidPostTweet:tweet requestId:rid];
+                     }
+                 }
+             }
+         }
+     }];
+    
+    return rid;
+}
+
 // Busca um usuário por user name (o '@') e notifica os observers quando achar
 - (long)searchUserByName:(NSString*)userName callback:(void (^)(long, TBAccount*))callbackBlock;
 {
@@ -481,6 +562,12 @@
      }];
     
     return rid;
+}
+
+// Método helper que transforma uma imagem em base64
+- (NSString*)base64Image:(UIImage*)image
+{
+    return [UIImagePNGRepresentation(image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
 }
 
 @end

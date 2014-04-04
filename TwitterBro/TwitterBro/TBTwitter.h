@@ -10,7 +10,7 @@
 #import <Twitter/Twitter.h>
 #import <Social/Social.h>
 #import <Accounts/Accounts.h>
-#import "TBImports.h"
+#import "TwitterBro.h"
 
 // TwitterObserver
 @protocol TBTwitterObserver <NSObject>
@@ -31,6 +31,9 @@
 
 // Ocorre quando uma requisição é respondida com um erro
 - (void)twitterDidReceiveError:(long)requestId errors:(NSArray*)errorsArray;
+
+// Ocorre quando um tweet é postado
+- (void)twitterDidPostTweet:(TBTweet*)tweet requestId:(long)requestID;
 
 // AEHUEHUEHUEHEUHE
 - (void)twitterDidReceiveData:(NSData*)data requestId:(long)requestId error:(NSError*)error;
@@ -76,6 +79,9 @@
 - (void)removeObserver:(id<TBTwitterObserver>)observer;
 
 - (void)tweet:(UIViewController*)view text:(NSString*)text image:(UIImage *)image;
+
+// Posta um tweet com a imagem provida como anexo
+- (long)postTweet:(NSString*)text image:(UIImage*)image callback:(void (^)(long, TBTweet*))callbackBlock;;
 
 // Busca um usuário por user name (o '@') e notifica os observers quando achar
 - (long)searchUserByName:(NSString*)userName callback:(void (^)(long, TBAccount*))callbackBlock;
