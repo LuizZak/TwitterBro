@@ -176,19 +176,19 @@
     
     NSURL *url = [[NSURL alloc] initWithString:@"https://api.twitter.com/1.1/statuses/update_with_media.json"];
     
-    // Transforma a mídia em base64 e coloca na requisição
-    /*NSString *base64 = [self base64Image:image];
+    // Cria os parâmetros do request
+    NSDictionary *params = @{@"status": text};
     
-    [params setObject:base64 forKey:@"media[]"];*/
-
-    SLRequest *pegarUsuario = [SLRequest requestForServiceType:SLServiceTypeTwitter requestMethod:SLRequestMethodPOST URL:url parameters:nil];
+    SLRequest *request = [SLRequest requestForServiceType:SLServiceTypeTwitter requestMethod:SLRequestMethodPOST URL:url parameters:params];
     
-    [pegarUsuario addMultipartData:[text dataUsingEncoding:NSUTF8StringEncoding] withName:@"status" type:@"multipart/form-data" filename:nil];
-    //[pegarUsuario addMultiPartData:[@"I just found the secret level!" dataUsingEncoding:NSUTF8StringEncoding] withName:@"status" type:@"multipart/form-data"];
+    // Insere a imagem no corpo do request
+    NSData *imgData = UIImagePNGRepresentation(image);
+    [request addMultipartData:imgData withName:@"media[]" type:@"image/png" filename:@"image.png"];
     
-    [pegarUsuario setAccount:self.twitterAccount];
+    // Inicia o request
+    [request setAccount:self.twitterAccount];
     
-    [pegarUsuario performRequestWithHandler:
+    [request performRequestWithHandler:
      ^(NSData *responseData, NSHTTPURLResponse *urlResponse, NSError *error) {
          if (responseData)
          {
@@ -199,8 +199,6 @@
              
              // Verifica se house algum erro durante a requisição
              NSArray *arrayDeErros = [responseJson objectForKey:@"errors"];
-             
-             id erroa = arrayDeErros[0];
              
              if(arrayDeErros != nil)
              {
