@@ -26,7 +26,7 @@
 // Ocorre quando o usuário é autenticado pelo serviço do twitter
 - (void)twitterDidAuthenticateUser:(ACAccount*)account;
 
-// Ocorre quando um erro de autentica
+// Ocorre quando um erro de autenticação é detectado
 - (void)twitterDidFailAuthehticateUser:(NSError*)error;
 
 // Ocorre quando uma requisição é respondida com um erro
@@ -35,7 +35,7 @@
 // Ocorre quando um tweet é postado
 - (void)twitterDidPostTweet:(TBTweet*)tweet requestId:(long)requestID;
 
-// AEHUEHUEHUEHEUHE
+// Selector não utilizado
 - (void)twitterDidReceiveData:(NSData*)data requestId:(long)requestId error:(NSError*)error;
 
 // Método chamado toda vez que um usuário é recebido pelo singleton do twitter
